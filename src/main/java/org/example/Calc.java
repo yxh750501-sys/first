@@ -1,34 +1,61 @@
 package org.example;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Calc {
 
     public static int run(String exp) {
 
+        if (!exp.contains(" ")) {
+            return Integer.parseInt(exp);
+        }
+
+        boolean needToMulti = exp.contains("*");
         boolean needToPlus = exp.contains("+");
-        boolean needToMinus = exp.contains("-");
 
-        String[] bits = null;
+        if (needToCompound) {
+            String[] bits = exp.split(" \\+ ");
 
-        if (needToPlus) {
-            bits = exp.split(" \\+ ");
-        } else if (needToMinus) {
-            bits = exp.split(" - ");
-        }
+            String newExp = Arrays.stream(bits)
+                    .mapToInt(Calc::run)
+                    .mapToObj(e -> e + "")
+                    .collect(Collectors.joining(" + "));
 
-        int a = Integer.parseInt(bits[0]);
-        int b = Integer.parseInt(bits[1]);
-        int c = 0;
-
-        if (bits.length > 2) {
-            c = Integer.parseInt(bits[2]);
+            return run(newExp);
         }
 
         if (needToPlus) {
-            return a + b + c;
-        } else if (needToMinus) {
-            return a - b;
+            String[] bits = exp.split(" \\+ ");
+            int sum = 0;
+
+            for (int i = 0; i < bits.length; i++) {
+                sum += Integer.parseInt(bits[i]);
+            }
+
+            return sum;
+        } else if (needToMulti) {
+            String[] bits = exp.split(" \\* ");
+
+            int sum = 1;
+
+            for (int i = 0; i < bits.length; i++) {
+                sum *= Integer.parseInt(bits[i]);
+            }
+
+            return sum;
         }
+        throw new RuntimeException("해석 불가 : 올바른 계산식이 아님");
     }
-}
 
+    private static String stripOuterBrackets(String exp) {
+        int outerBracketsCount = 0;
 
+        while (exp.charAt(outerBracketsCount) == '(' && exp.charAt(exp.length() - 1 - outerBracketsCount) == ')') {
+            outerBracketsCount++;
+        }
+        if (outerBracketsCount == 0) return exp;
+
+        return exp.substring(outerBracketsCount, exp.length() - outerBracketsCount);
+    }
+    }
